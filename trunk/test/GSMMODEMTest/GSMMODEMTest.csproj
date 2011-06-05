@@ -5,13 +5,14 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}</ProjectGuid>
+    <ProjectGuid>{E6CA0D77-AA90-44F4-8798-1634A16617DB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GSMMODEM</RootNamespace>
-    <AssemblyName>GSMMODEM</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <RootNamespace>GSMMODEMTest</RootNamespace>
+    <AssemblyName>GSMMODEMTest</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,21 +32,36 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>F:\C#资源\C#工具\Moq.4.0.10827\NET35\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="xunit">
+      <HintPath>D:\Program Files\xunit\xunit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entity\CodedMessage.cs" />
-    <Compile Include="Entity\DecodedMessage.cs" />
-    <Compile Include="Exceptions\GsmModemException.cs" />
-    <Compile Include="GsmModem.cs" />
-    <Compile Include="ISerialPort.cs" />
-    <Compile Include="PDUEncoding.cs" />
+    <Compile Include="CodedMessageTest.cs" />
+    <Compile Include="DecodedMessageTest.cs" />
+    <Compile Include="gm.cs" />
+    <Compile Include="GsmModemTest.cs" />
+    <Compile Include="MockSerialPort.cs" />
+    <Compile Include="PDUEncodingTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SerialPort.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GSMMODEM\GSMMODEM.csproj">
+      <Project>{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}</Project>
+      <Name>GSMMODEM</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MockSerialPortDat.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

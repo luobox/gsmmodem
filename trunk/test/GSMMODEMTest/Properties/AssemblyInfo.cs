@@ -5,15 +5,14 @@ using System.Runtime.InteropServices;
 // 有关程序集的常规信息通过以下
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
-[assembly: AssemblyTitle("GSMMODEM")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("GSMMODEMTest")]
+[assembly: AssemblyDescription("GSMMODEM项目测试")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GSMMODEM")]
+[assembly: AssemblyProduct("GSMMODEMTest")]
 [assembly: AssemblyCopyright("Copyright © 刘中原 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: InternalsVisibleTo("GSMMODEMTest")]
 
 // 将 ComVisible 设置为 false 使此程序集中的类型
 // 对 COM 组件不可见。如果需要从 COM 访问此程序集中的类型，
@@ -21,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
-[assembly: Guid("70535883-df3d-4360-8b0c-546f8f236f17")]
+[assembly: Guid("0ab4a473-aee7-4959-92c0-7a5be04a13fb")]
 
 // 程序集的版本信息由下面四个值组成:
 //
