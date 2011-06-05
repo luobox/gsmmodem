@@ -1,0 +1,8 @@
+﻿#串口数据模拟 模拟短信猫设备
+#每行','前面是串口发送字符 后是串口返回字符
+AT\r			, \r\nOK\r\n
+ATE0\r			, \r\nOK\r\n
+AT+CMGF=1\r		, \r\nOK\r\n
+AT+CMGF=0\r		, \r\nOK\r\n
+AT+CMGS=20\r	,  >  
+0011000BA15150800576F70008C40652184E2D539F^Z\r				, \r\nOK\r\n
