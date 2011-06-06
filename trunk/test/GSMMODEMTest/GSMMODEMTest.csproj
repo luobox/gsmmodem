@@ -45,7 +45,6 @@
   <ItemGroup>
     <Compile Include="CodedMessageTest.cs" />
     <Compile Include="DecodedMessageTest.cs" />
-    <Compile Include="gm.cs" />
     <Compile Include="GsmModemTest.cs" />
     <Compile Include="MockSerialPort.cs" />
     <Compile Include="PDUEncodingTest.cs" />
