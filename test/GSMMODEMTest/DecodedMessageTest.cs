@@ -53,7 +53,7 @@ namespace GSMMODEMTest
             dm.Add(new DecodedMessage("0202B2", sca, "2011-05-20 21:31:01", p, ")))))))."));
 
             Assert.Equal(sca, dm.ServiceCenterAddress);
-            Assert.Equal(t, dm.SendTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            Assert.Equal("2011-05-20 21:31:01", dm.SendTime.ToString("yyyy-MM-dd HH:mm:ss"));
             Assert.Equal(p, dm.PhoneNumber);
             Assert.Equal(c + "))))))).", dm.SmsContent);
         }
