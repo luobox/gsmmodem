@@ -430,7 +430,6 @@ namespace GSMMODEM
         /// <summary>
         /// PDU7bit的解码，供UserData的get访问器调用
         /// </summary>
-        /// <param name="len">用户数据长度</param>
         /// <param name="userData">数据部分PDU字符串</param>
         /// <returns></returns>
         private string PDU7bitContentDecoder(string userData)
