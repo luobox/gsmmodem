@@ -7,6 +7,7 @@ namespace GSMMODEM
     public class DecodedMessage
     {
         #region 构造函数
+
         /// <summary>
         /// 构造函数 
         /// </summary>
@@ -14,7 +15,9 @@ namespace GSMMODEM
         /// <param name="sendTime">发送时间 字符串</param>
         /// <param name="phoneNumber">手机号码</param>
         /// <param name="smsContent">短信内容</param>
-        public DecodedMessage(string serviceCenterAddress, string sendTime, string phoneNumber, string smsContent) : this("010100", serviceCenterAddress, sendTime, phoneNumber, smsContent) { }
+        public DecodedMessage(string serviceCenterAddress, string sendTime, string phoneNumber, string smsContent)
+            : this("010100", serviceCenterAddress, sendTime, phoneNumber, smsContent)
+        { }
 
         /// <summary>
         /// 构造函数
@@ -31,7 +34,7 @@ namespace GSMMODEM
             PhoneNumber = phoneNumber;
 
             Flag = head.Substring(4, 2);
-            Current = Convert.ToInt16(head.Substring(2, 2), 16);
+            current = Convert.ToInt16(head.Substring(2, 2), 16);
 
             //sd初始化
             for (int i = 1; i <= Convert.ToInt16(head.Substring(0, 2), 16); i++)
@@ -64,12 +67,12 @@ namespace GSMMODEM
         /// </summary>
         public bool IsCompleted
         {
-            get { return (li.Count == Total); }
+            get { return (li.Count == sd.Count); }
         }
 
 
         //当前修改值  合并长短信时使用  
-        public readonly int Current;
+        private int current;
 
         //这批长短信的唯一标识
         public readonly string Flag;
@@ -116,7 +119,7 @@ namespace GSMMODEM
                 throw new ArgumentException("不是本条的一部分");
             }
 
-            int current = dm.Current;
+            int current = dm.current;
 
             if (this.li.Contains(current))
             {
@@ -129,7 +132,7 @@ namespace GSMMODEM
 
         public override string ToString()
         {
-            return this.Total.ToString("X2") + this.Current.ToString("X2") + this.Flag
+            return this.Total.ToString("X2") + this.current.ToString("X2") + this.Flag
                 + "," + this.ServiceCenterAddress + "," + this.PhoneNumber + ","
                 + this.SendTime.ToString("yyyyMMddHHmmss")
                 + "," + this.SmsContent;

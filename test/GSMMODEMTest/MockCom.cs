@@ -1,40 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Moq;
 using GSMMODEM;
 using System.IO;
 
 namespace GSMMODEMTest
 {
-    class MockSerialPort
+    class MockCom
     {
-        private Mock<ISerialPort> mockSerialPort;
+        private Mock<ICom> mockCom;
 
-        public Mock<ISerialPort> MockObject
+        public Mock<ICom> MockObject
         {
-            get { return mockSerialPort; }
-        }
+            get { return mockCom; }
+        }  
 
         //mock串口 接收缓冲区
         string recieveBuffer;
 
-        public MockSerialPort()
+        public MockCom()
         {
-            mockSerialPort = new Mock<ISerialPort>();           //串口mock对象
+            mockCom = new Mock<ICom>();           //串口mock对象
 
             //串口写数据 调用串口发送接收数据处理
-            mockSerialPort.Setup(sp => sp.Write(It.IsAny<String>())).Callback<String>(s => RTHandling(s));
+            mockCom.Setup(com => com.Write(It.IsAny<String>())).Callback<String>(s => RTHandling(s));
 
             //串口设备打开 IsOpen属性改为true
-            mockSerialPort.Setup(sp => sp.Open()).Callback(() => { mockSerialPort.Setup(sp => sp.IsOpen).Returns(true); });
+            mockCom.Setup(com => com.Open()).Callback(() => { mockCom.Setup(com => com.IsOpen).Returns(true); });
 
             //串口设备关闭 IsOpen属性改为fasle
-            mockSerialPort.Setup(sp => sp.Close()).Callback(() => { mockSerialPort.Setup(sp => sp.IsOpen).Returns(false); });
+            mockCom.Setup(com => com.Close()).Callback(() => { mockCom.Setup(com => com.IsOpen).Returns(false); });
 
             //mock串口 从缓冲区读数据
-            mockSerialPort.Setup(sp => sp.ReadTo(It.IsAny<string>())).Returns<string>(
+            mockCom.Setup(com => com.ReadTo(It.IsAny<string>())).Returns<string>(
                 s =>
                 {
                     int index = recieveBuffer.IndexOf(s);
@@ -46,15 +44,17 @@ namespace GSMMODEMTest
                     recieveBuffer = recieveBuffer.Remove(0, index + s.Length);
                     return result;
                 });
-            mockSerialPort.Setup(sp => sp.ReadLine()).Returns(
+            mockCom.Setup(com => com.ReadLine()).Returns(
                 () =>
                 {
-                    return MockObject.Object.ReadTo("\n");
-                    //string result = recieveBuffer.Split('\n')[0];
-                    //recieveBuffer = recieveBuffer.Remove(0, result.Length + 1);
-                    //return result;
+                    return mockCom.Object.ReadTo("\n");
                 });
-            mockSerialPort.Setup(sp => sp.ReadExisting()).Returns(() => { string result = recieveBuffer; recieveBuffer = string.Empty; return result; });
+            mockCom.Setup(com => com.ReadExisting()).Returns(() =>
+            {
+                string result = recieveBuffer; 
+                recieveBuffer = string.Empty;
+                return result;
+            });
         }
 
         /// <summary>
@@ -91,17 +91,17 @@ namespace GSMMODEMTest
         {
             foreach (string st in ReadLineFromTxt())
             {
-                if (st.Split(',')[0].Contains(s))
+                if (st.Split(';')[0].Contains(s))
                 {
-                    recieveBuffer += (st.Split(',')[1]);
+                        recieveBuffer += (st.Split(';')[1]);
                 }
             }
         }
 
-        public void DataRecieved()
+        public void SmsRecieved()
         {
-            recieveBuffer="\r\n+CMTI: \"SM\",1\r\n";
-            this.mockSerialPort.Raise(sp => sp.DataReceived += null,new EventArgs());
+            recieveBuffer = "+CMTI: \"SM\",1\r\n";
+            this.mockCom.Raise(com => com.DataReceived += null,new EventArgs());
         }
 
     }
