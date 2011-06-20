@@ -15,8 +15,8 @@
  *              
  * 创建标识：   刘中原20110520
  * 
- * 修改标识：   
- * 修改描述：   
+ * 修改标识：   刘中原20110617
+ * 修改描述：   修改为1.0正式版
  * 
 **----------------------------------------------------------------*/
 
@@ -35,17 +35,12 @@ namespace GSMMODEM
     {
         #region 构造函数
         /// <summary>
-        /// 无参数构造函数 完成有关初始化工作
+        /// 默认构造函数 完成有关初始化工作
         /// </summary>
+        /// <remarks>默认 端口号：COM1，波特率：9600</remarks>
         public GsmModem()
-        {
-            sp = new SerialPort();
-
-            sp.ReadTimeout = 10000;         //读超时时间 发送短信时间的需要
-            sp.RtsEnable = true;            //必须为true 这样串口才能接收到数据
-
-            sp.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
-        }
+            : this("COM1", 9600)
+        { }
 
         /// <summary>
         /// 构造函数
@@ -54,30 +49,31 @@ namespace GSMMODEM
         /// <param name="baudRate">波特率</param>
         public GsmModem(string comPort, int baudRate)
         {
-            sp = new SerialPort();
+            _com = new MyCom();
 
-            sp.PortName = comPort;          //
-            sp.BaudRate = baudRate;
-            sp.ReadTimeout = 10000;         //读超时时间 发送短信时间的需要
-            sp.RtsEnable = true;            //必须为true 这样串口才能接收到数据
+            _com.PortName = comPort;          //
+            _com.BaudRate = baudRate;
+            _com.ReadTimeout = 10000;         //读超时时间 发送短信时间的需要
+            _com.RtsEnable = true;            //必须为true 这样串口才能接收到数据
 
-            sp.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
+            _com.DataReceived += new EventHandler(sp_DataReceived);
         }
 
-        internal GsmModem(ISerialPort serialPort)
+        //单元测试用构造函数
+        internal GsmModem(ICom com)
         {
-            sp = serialPort;
+            _com = com;
 
-            sp.ReadTimeout = 10000;         //读超时时间 发送短信时间的需要
-            sp.RtsEnable = true;            //必须为true 这样串口才能接收到数据
+            _com.ReadTimeout = 10000;         //读超时时间 发送短信时间的需要
+            _com.RtsEnable = true;            //必须为true 这样串口才能接收到数据
 
-            sp.DataReceived += new SerialDataReceivedEventHandler(sp_DataReceived);
+            _com.DataReceived += new EventHandler(sp_DataReceived);
         }
 
         #endregion 构造函数
 
         #region 私有字段
-        private ISerialPort sp;              //私有字段 串口对象
+        private ICom _com;              //私有字段 串口对象
 
         private Queue<int> newMsgIndexQueue = new Queue<int>();            //新消息序号
 
@@ -95,18 +91,11 @@ namespace GSMMODEM
         {
             get
             {
-                return sp.PortName;
+                return _com.PortName;
             }
             set
             {
-                try
-                {
-                    sp.PortName = value;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                _com.PortName = value;
             }
         }
 
@@ -118,11 +107,11 @@ namespace GSMMODEM
         {
             get
             {
-                return sp.BaudRate;
+                return _com.BaudRate;
             }
             set
             {
-                sp.BaudRate = value;
+                _com.BaudRate = value;
             }
         }
 
@@ -134,7 +123,7 @@ namespace GSMMODEM
         {
             get
             {
-                return sp.IsOpen;
+                return _com.IsOpen;
             }
         }
 
@@ -157,26 +146,19 @@ namespace GSMMODEM
             }
         }
 
-        #endregion 属性
+        #endregion
 
-        #region 委托和事件
-
-        /// <summary>
-        /// 创建事件收到信息的委托
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public delegate void OnRecievedHandler(object sender, EventArgs e);
+        #region 收到短信事件
 
         /// <summary>
         /// 收到短信息事件 OnRecieved 
         /// 收到短信将引发此事件
         /// </summary>
-        public event OnRecievedHandler OnRecieved;
+        public event EventHandler SmsRecieved;
 
-        #endregion 委托和事件
+        #endregion
 
-        #region 串口收到数据事件
+        #region 串口收到数据检测短信收到
 
         /// <summary>
         /// 从串口收到数据 串口事件
@@ -184,20 +166,28 @@ namespace GSMMODEM
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void sp_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        void sp_DataReceived(object sender, EventArgs e)
         {
-            string temp = sp.ReadLine();
+            string temp = _com.ReadLine();
             if (temp.Length > 8)
             {
                 if (temp.Substring(0, 6) == "+CMTI:")
                 {
                     newMsgIndexQueue.Enqueue(Convert.ToInt32(temp.Split(',')[1]));  //存储新信息序号
-                    OnRecieved(this, e);                                //触发事件
+                    OnSmsRecieved(e);                                //触发事件
                 }
             }
         }
 
-        #endregion 串口收到数据事件
+        protected virtual void OnSmsRecieved(EventArgs e)
+        {
+            if (SmsRecieved != null)
+            {
+                SmsRecieved(this, e);
+            }
+        }
+
+        #endregion
 
         #region 方法
 
@@ -209,21 +199,21 @@ namespace GSMMODEM
         public void Open()
         {
             //如果串口已打开 则先关闭
-            if (sp.IsOpen)
+            if (_com.IsOpen)
             {
-                sp.Close();
+                _com.Close();
             }
 
-            sp.Open();
+            _com.Open();
 
             //初始化设备
-            if (sp.IsOpen)
+            if (_com.IsOpen)
             {
-                sp.Write("ATE0\r");
+                _com.Write("ATE0\r");
                 Thread.Sleep(50);
-                sp.Write("AT+CMGF=0\r");
+                _com.Write("AT+CMGF=0\r");
                 Thread.Sleep(50);
-                sp.Write("AT+CNMI=2,1\r");
+                _com.Write("AT+CNMI=2,1\r");
             }
         }
 
@@ -234,7 +224,7 @@ namespace GSMMODEM
         {
             try
             {
-                sp.Close();
+                _com.Close();
             }
             catch (Exception ex)
             {
@@ -312,19 +302,19 @@ namespace GSMMODEM
         {
             string result = string.Empty;
             //忽略接收缓冲区内容，准备发送
-            sp.DiscardInBuffer();
+            _com.DiscardInBuffer();
 
             //注销事件关联，为发送做准备
-            sp.DataReceived -= sp_DataReceived;
+            _com.DataReceived -= sp_DataReceived;
 
             //发送AT指令
             try
             {
-                sp.Write(ATCom + "\r");
+                _com.Write(ATCom + "\r");
             }
             catch (Exception ex)
             {
-                sp.DataReceived += sp_DataReceived;
+                _com.DataReceived += sp_DataReceived;
                 throw ex;
             }
 
@@ -334,7 +324,7 @@ namespace GSMMODEM
                 string temp = string.Empty;
                 while (temp.Trim() != "OK" && temp.Trim() != "ERROR")
                 {
-                    temp = sp.ReadLine();
+                    temp = _com.ReadLine();
                     result += temp;
                 }
                 return result;
@@ -346,7 +336,7 @@ namespace GSMMODEM
             finally
             {
                 //事件重新绑定 正常监视串口数据
-                sp.DataReceived += sp_DataReceived;
+                _com.DataReceived += sp_DataReceived;
             }
         }
 
@@ -371,14 +361,14 @@ namespace GSMMODEM
                 try
                 {
                     //注销事件关联，为发送做准备
-                    sp.DataReceived -= sp_DataReceived;
+                    _com.DataReceived -= sp_DataReceived;
 
-                    sp.Write("AT+CMGS=" + cm.Length.ToString() + "\r");
-                    sp.ReadTo(">");
-                    sp.DiscardInBuffer();
+                    _com.Write("AT+CMGS=" + cm.Length.ToString() + "\r");
+                    _com.ReadTo(">");
+                    _com.DiscardInBuffer();
 
                     //事件重新绑定 正常监视串口数据
-                    sp.DataReceived += sp_DataReceived;
+                    _com.DataReceived += sp_DataReceived;
 
                     tmp = SendAT(cm.PduCode + (char)(26));  //26 Ctrl+Z ascii码
                 }
@@ -386,7 +376,7 @@ namespace GSMMODEM
                 {
                     throw new Exception("短信发送失败");
                 }
-                if (tmp.Substring(tmp.Length - 4, 3).Trim() == "OK")
+                if (tmp.Contains("OK"))
                 {
                     continue;
                 }
@@ -410,7 +400,7 @@ namespace GSMMODEM
             string tmp = string.Empty;
 
             tmp = SendAT("AT+CMGL=0");
-            if (tmp.Substring(tmp.Length - 4, 3).Trim() == "OK")
+            if (tmp.Contains("OK"))
             {
                 temp = tmp.Split('\r');
             }
@@ -418,7 +408,7 @@ namespace GSMMODEM
             PDUEncoding pe = new PDUEncoding();
             foreach (string str in temp)
             {
-                if (str != null && str.Length != 0 && str.Substring(0, 2).Trim() != "+C" && str.Substring(0, 2) != "OK")
+                if (str != null && str.Length > 18)   //短信PDU长度仅仅短信中心就18个字符
                 {
                     result.Add(pe.PDUDecoder(str));
                 }
@@ -463,7 +453,7 @@ namespace GSMMODEM
             {
                 try
                 {
-                    DelMsgByIndex(index);
+                    DeleteMsgByIndex(index);
                 }
                 catch
                 {
@@ -479,7 +469,7 @@ namespace GSMMODEM
 
         #region 删除短信
 
-        public void DelMsgByIndex(int index)
+        public void DeleteMsgByIndex(int index)
         {
             if (SendAT("AT+CMGD=" + index.ToString()).Trim() == "OK")
             {
@@ -491,7 +481,7 @@ namespace GSMMODEM
 
         #endregion 删除短信
 
-        #endregion 方法
+        #endregion
     }
 
 }

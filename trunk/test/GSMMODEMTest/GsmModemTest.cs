@@ -10,11 +10,28 @@ namespace GSMMODEMTest
 {
     public class GsmModemTest:IUseFixture<GsmModem>
     {
-        private MockSerialPort ms = new MockSerialPort();
+        private MockCom ms = new MockCom();
         GsmModem gm;
-        
-        public void InitializeCompoEnent()
+
+        //测试前运行的函数
+        public void SetFixture(GsmModem data)
         {
+            InitializeCompoenent();
+        }
+
+        //初始化各部件
+        public void InitializeCompoenent()
+        {
+            gm = new GsmModem(ms.MockObject.Object);
+            gm.SmsRecieved += new EventHandler(gm_SmsRecieved);
+        }
+
+        //接收短信事件
+        void gm_SmsRecieved(object sender, EventArgs e)
+        {
+            DecodedMessage dm = gm.ReadNewMsg();
+            //throw new NotImplementedException();
+            Assert.Equal(1, dm.Total);
         }
 
         [Fact]
@@ -40,12 +57,14 @@ namespace GSMMODEMTest
         [Fact]
         public void NewMsgTest()
         {
-            ms.DataRecieved();
+            ms.SmsRecieved();
         }
 
-        public void SetFixture(GsmModem data)
+        [Fact]
+        public void GetUnreadMsgTest()
         {
-            gm = new GsmModem(ms.MockObject.Object);
+            List<DecodedMessage> ldm = gm.GetUnreadMsg();
+            Assert.Equal(3, ldm.Count);
         }
     }
 }

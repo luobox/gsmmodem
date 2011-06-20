@@ -4,18 +4,23 @@ using System.Text;
 
 namespace GSMMODEM
 {
-    class SerialPort : ISerialPort
+    class MyCom : ICom
     {
-        public SerialPort()
+        public MyCom()
         {
-            sp.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(sp_DataReceived);
+            sp.DataReceived +=new System.IO.Ports.SerialDataReceivedEventHandler(sp_DataReceived);
         }
 
         void sp_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
+            OnDataReceived(e);
+        }
+
+        protected virtual void OnDataReceived(EventArgs e)
+        {
             if (DataReceived != null)
             {
-                DataReceived(sender, e);
+                DataReceived(this, EventArgs.Empty);
             }
         }
 
@@ -72,18 +77,6 @@ namespace GSMMODEM
         public bool IsOpen
         {
             get { return sp.IsOpen; }
-        }
-
-        public string NewLine
-        {
-            get
-            {
-                return sp.NewLine;
-            }
-            set
-            {
-                sp.NewLine = value;
-            }
         }
 
         public System.IO.Ports.Parity Parity
@@ -146,7 +139,7 @@ namespace GSMMODEM
             }
         }
 
-        public event System.IO.Ports.SerialDataReceivedEventHandler DataReceived;
+        public event EventHandler DataReceived;
 
         public void Close()
         {
@@ -158,24 +151,9 @@ namespace GSMMODEM
             sp.DiscardInBuffer();
         }
 
-        public void DiscardOutBuffer()
-        {
-            sp.DiscardOutBuffer();
-        }
-
         public void Open()
         {
             sp.Open();
-        }
-
-        public int Read(byte[] buffer, int offset, int count)
-        {
-            return sp.Read(buffer,offset,count);
-        }
-
-        public int Read(char[] buffer, int offset, int count)
-        {
-            return sp.Read(buffer, offset, count);
         }
 
         public int ReadByte()
@@ -206,16 +184,6 @@ namespace GSMMODEM
         public void Write(string text)
         {
             sp.Write(text);
-        }
-
-        public void Write(byte[] buffer, int offset, int count)
-        {
-            sp.Write(buffer, offset, count);
-        }
-
-        public void Write(char[] buffer, int offset, int count)
-        {
-            sp.Write(buffer, offset, count);
         }
 
         public void WriteLine(string text)

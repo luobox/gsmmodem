@@ -40,13 +40,18 @@
     <Compile Include="Entity\DecodedMessage.cs" />
     <Compile Include="Exceptions\GsmModemException.cs" />
     <Compile Include="GsmModem.cs" />
-    <Compile Include="ISerialPort.cs" />
+    <Compile Include="ICom.cs" />
     <Compile Include="PDUEncoding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SerialPort.cs" />
+    <Compile Include="MyCom.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Properties\AssemblyInfo.tpl" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>SubWCRev.exe $(SolutionDir) $(ProjectDir)\Properties\AssemblyInfo.tpl $(ProjectDir)\Properties\AssemblyInfo.cs -f</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
