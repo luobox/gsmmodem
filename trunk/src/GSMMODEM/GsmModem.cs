@@ -179,6 +179,10 @@ namespace GSMMODEM
             }
         }
 
+        /// <summary>
+        /// 保护虚方法，引发收到短信事件
+        /// </summary>
+        /// <param name="e">事件数据</param>
         protected virtual void OnSmsRecieved(EventArgs e)
         {
             if (SmsRecieved != null)
@@ -417,6 +421,11 @@ namespace GSMMODEM
             return result;
         }
 
+        /// <summary>
+        /// 读取新消息
+        /// </summary>
+        /// <returns>新消息解码后内容</returns>
+        /// <remarks>建议在收到短信事件中调用</remarks>
         public DecodedMessage ReadNewMsg()
         {
             return ReadMsgByIndex(newMsgIndexQueue.Dequeue());
@@ -469,6 +478,10 @@ namespace GSMMODEM
 
         #region 删除短信
 
+        /// <summary>
+        /// 按索引号删除短信
+        /// </summary>
+        /// <param name="index">The index.</param>
         public void DeleteMsgByIndex(int index)
         {
             if (SendAT("AT+CMGD=" + index.ToString()).Trim() == "OK")

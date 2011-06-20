@@ -4,6 +4,9 @@ using System.Text;
 
 namespace GSMMODEM
 {
+    /// <summary>
+    /// 值类，存储解码后的字符串
+    /// </summary>
     public class DecodedMessage
     {
         #region 构造函数
@@ -53,7 +56,11 @@ namespace GSMMODEM
         private List<int> li = new List<int>();
 
         #region 公有字段 或是属性
-        //短信总条数 //针对长短信
+
+        /// <summary>
+        /// 短信总条数：长短信每条被分发为的条数
+        /// </summary>
+        /// <remarks>针对长短信</remarks>
         public int Total
         {
             get
@@ -74,19 +81,29 @@ namespace GSMMODEM
         //当前修改值  合并长短信时使用  
         private int current;
 
-        //这批长短信的唯一标识
+        /// <summary>
+        /// 这批长短信的唯一标识
+        /// </summary>
         public readonly string Flag;
 
-        //短信中心
+        /// <summary>
+        /// 短信中心
+        /// </summary>
         public readonly string ServiceCenterAddress;
         
-        //发送时间
+        /// <summary>
+        /// 发送时间
+        /// </summary>
         public DateTime SendTime;
 
-        //手机号码
+        /// <summary>
+        /// 手机号码
+        /// </summary>
         public readonly string PhoneNumber;
 
-        //短信内容
+        /// <summary>
+        /// 短信内容
+        /// </summary>
         public string SmsContent
         {
             get
@@ -130,6 +147,11 @@ namespace GSMMODEM
             sd[current] = dm.sd[current];
         }
 
+        /// <summary>
+        /// 转化为字符串
+        /// </summary>
+        /// <returns>转化的到的字符串</returns>
+        /// <remarks>仅仅单元测试用，建议客户不要使用</remarks>
         public override string ToString()
         {
             return this.Total.ToString("X2") + this.current.ToString("X2") + this.Flag
