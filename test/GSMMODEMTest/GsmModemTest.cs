@@ -29,7 +29,8 @@ namespace GSMMODEMTest
         //接收短信事件
         void gm_SmsRecieved(object sender, EventArgs e)
         {
-            DecodedMessage dm = gm.ReadNewMsg();
+            int sMsgIndex = 0;
+            DecodedMessage dm = gm.ReadNewMsg(out sMsgIndex);
             //throw new NotImplementedException();
             Assert.Equal(1, dm.Total);
         }

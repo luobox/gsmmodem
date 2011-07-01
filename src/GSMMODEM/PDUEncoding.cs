@@ -647,7 +647,10 @@ namespace GSMMODEM
         /// </summary>
         /// <param name="strPDU">短信PDU字符串</param>
         /// <returns>信息字符串（MMNN,中心号码，手机号码，发送时间，短信内容 MM这批短信总条数 NN本条所在序号）</returns>
-        public DecodedMessage PDUDecoder(string strPDU)
+        public DecodedMessage PDUDecoder(string strPDU) {
+            return PDUDecoder(0, strPDU);
+        }
+        public DecodedMessage PDUDecoder(int SmsIndex,string strPDU)
         {
             int lenSCA = Convert.ToInt32(strPDU.Substring(0, 2), 16) * 2 + 2;       //短消息中心占长度
             serviceCenterAddress = strPDU.Substring(0, lenSCA);
@@ -677,7 +680,7 @@ namespace GSMMODEM
                     userDataLenghth = (Convert.ToInt16(strPDU.Substring(lenSCA + lenOA + 20, 2), 16) - 6).ToString("X2");
                     userData = strPDU.Substring(lenSCA + lenOA + 22 + 6 * 2);
 
-                    return new DecodedMessage(strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
+                    return new DecodedMessage(SmsIndex,strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
                         + strPDU.Substring(lenSCA + lenOA + 22 + 3 * 2, 2)
                         , ServiceCenterAddress
                         , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
@@ -693,7 +696,7 @@ namespace GSMMODEM
                     byte byt = Convert.ToByte(strPDU.Substring(lenSCA + lenOA + 22 + 6 * 2, 2), 16);
                     char first = (char)(byt >> 1);
 
-                    return new DecodedMessage(strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
+                    return new DecodedMessage(SmsIndex, strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
                         + strPDU.Substring(lenSCA + lenOA + 22 + 3 * 2, 2)
                         , ServiceCenterAddress
                         , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
@@ -705,7 +708,7 @@ namespace GSMMODEM
             }
 
             userData = strPDU.Substring(lenSCA + lenOA + 22);
-            return new DecodedMessage("010100"
+            return new DecodedMessage(SmsIndex, "010100"
                 , ServiceCenterAddress
                 , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
                 + ServiceCenterTimeStamp.Substring(6, 2) + " " + ServiceCenterTimeStamp.Substring(8, 2) + ":"

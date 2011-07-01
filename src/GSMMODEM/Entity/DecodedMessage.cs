@@ -18,8 +18,8 @@ namespace GSMMODEM
         /// <param name="sendTime">发送时间 字符串</param>
         /// <param name="phoneNumber">手机号码</param>
         /// <param name="smsContent">短信内容</param>
-        public DecodedMessage(string serviceCenterAddress, string sendTime, string phoneNumber, string smsContent)
-            : this("010100", serviceCenterAddress, sendTime, phoneNumber, smsContent)
+        public DecodedMessage(int SmsIndex,string serviceCenterAddress, string sendTime, string phoneNumber, string smsContent)
+            : this(SmsIndex,"010100", serviceCenterAddress, sendTime, phoneNumber, smsContent)
         { }
 
         /// <summary>
@@ -30,11 +30,12 @@ namespace GSMMODEM
         /// <param name="sendTime">发送时间 字串</param>
         /// <param name="phoneNumber">手机号码</param>
         /// <param name="smsContent">短信内容</param>
-        public DecodedMessage(string head, string serviceCenterAddress, string sendTime, string phoneNumber, string smsContent)
+        public DecodedMessage(int sIndex,string head, string serviceCenterAddress, string sendTime, string phoneNumber, string smsContent)
         {
             ServiceCenterAddress = serviceCenterAddress;
             SendTime = DateTime.Parse(sendTime);
             PhoneNumber = phoneNumber;
+            SmsIndex = sIndex;
 
             Flag = head.Substring(4, 2);
             current = Convert.ToInt16(head.Substring(2, 2), 16);
@@ -100,6 +101,11 @@ namespace GSMMODEM
         /// 手机号码
         /// </summary>
         public readonly string PhoneNumber;
+
+        /// <summary>
+        /// SmsIndex
+        /// </summary>
+        public readonly int SmsIndex;
 
         /// <summary>
         /// 短信内容

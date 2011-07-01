@@ -213,12 +213,72 @@ namespace GSMMODEM
             //初始化设备
             if (_com.IsOpen)
             {
-                _com.Write("ATE0\r");
-                Thread.Sleep(50);
-                _com.Write("AT+CMGF=0\r");
-                Thread.Sleep(50);
-                _com.Write("AT+CNMI=2,1\r");
+                string sResult = "";
+                    
+                try
+                {
+
+                    _com.DataReceived -= sp_DataReceived;
+                    _com.Write("ATE0\r");
+                    Thread.Sleep(200);
+                    sResult += " ATE1:" +_com.ReadExisting();
+                    _com.Write("AT+CMGF=0\r");
+                    Thread.Sleep(200);
+                    sResult += " AT+CMGF=0:" + _com.ReadExisting();
+                    _com.Write("AT+CNMI=0\r");
+                    Thread.Sleep(200);
+                    sResult += " AT+CNMI=0:" + _com.ReadExisting();
+                    _com.DataReceived += sp_DataReceived;
+
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(" Connect Send AT Exception:" + ex.ToString() + " Result:" + sResult);
+                }
+
             }
+        }
+
+        public bool Open(out string sResult)
+        {
+            //如果串口已打开 则先关闭
+            sResult = "";
+            if (_com.IsOpen)
+            {
+                _com.Close();
+            }
+
+            _com.Open();
+
+            //初始化设备
+            if (_com.IsOpen)
+            {
+
+                try
+                {
+                    _com.DataReceived -= sp_DataReceived;
+                    _com.Write("ATE0\r");
+                    Thread.Sleep(200);
+                    sResult += " ATE0:" + _com.ReadExisting();
+                    _com.Write("AT+CMGF=0\r");
+                    Thread.Sleep(200);
+                    sResult += " AT+CMGF=0:" + _com.ReadExisting();
+                    _com.Write("AT+CNMI=0\r");
+                    Thread.Sleep(200);
+                    sResult += " AT+CNMI=0:" + _com.ReadExisting();
+                    //绑定事件
+                    _com.DataReceived += sp_DataReceived;
+
+                    return true;
+
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(" Connect Send AT Exception:" + ex.ToString() + " Result:" + sResult);
+                }
+
+            }
+            return false;
         }
 
         /// <summary>
@@ -246,14 +306,14 @@ namespace GSMMODEM
         /// <returns>机器码字符串（设备厂商，本机号码）</returns>
         public string GetMachineNo()
         {
-            string result = SendAT("AT+CGMI");
+            string result = SendAT("AT+CGMR");
             if (result.Substring(result.Length - 4, 3).Trim() == "OK")
             {
                 result = result.Substring(0, result.Length - 5).Trim();
             }
             else
             {
-                throw new Exception("获取机器码失败");
+                throw new Exception("获取机器码失败:" + result);
             }
             return result;
         }
@@ -287,7 +347,7 @@ namespace GSMMODEM
                 }
                 else
                 {
-                    throw new Exception("获取短信中心失败");
+                    throw new Exception("获取短信中心失败:" + tmp);
                 }
             }
         }
@@ -376,16 +436,16 @@ namespace GSMMODEM
 
                     tmp = SendAT(cm.PduCode + (char)(26));  //26 Ctrl+Z ascii码
                 }
-                catch (Exception)
+                catch (Exception ee)
                 {
-                    throw new Exception("短信发送失败");
+                    throw new Exception("短信发送失败:" + ee.ToString());
                 }
                 if (tmp.Contains("OK"))
                 {
                     continue;
                 }
 
-                throw new Exception("短信发送失败");
+                throw new Exception("短信发送失败:" + tmp);
             }
         }
 
@@ -402,6 +462,7 @@ namespace GSMMODEM
             List<DecodedMessage> result = new List<DecodedMessage>();
             string[] temp = null;
             string tmp = string.Empty;
+            int iCurIndex = 0;
 
             tmp = SendAT("AT+CMGL=0");
             if (tmp.Contains("OK"))
@@ -412,9 +473,30 @@ namespace GSMMODEM
             PDUEncoding pe = new PDUEncoding();
             foreach (string str in temp)
             {
-                if (str != null && str.Length > 18)   //短信PDU长度仅仅短信中心就18个字符
+                if (str != null && str.Length > 6 )   //短信PDU长度仅仅短信中心就18个字符
                 {
-                    result.Add(pe.PDUDecoder(str));
+
+
+                    if (str.Substring(0, 6) == "+CMTI:")
+                    {
+                        iCurIndex = Convert.ToInt32(str.Split(',')[1]);  //存储新信息序号
+                    }
+                    if (str.Length > 18)
+                    {
+                        result.Add(pe.PDUDecoder(iCurIndex, str));
+
+                        if (AutoDelMsg)
+                        {
+                            try
+                            {
+                                DeleteMsgByIndex(iCurIndex);
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
                 }
             }
 
@@ -426,9 +508,10 @@ namespace GSMMODEM
         /// </summary>
         /// <returns>新消息解码后内容</returns>
         /// <remarks>建议在收到短信事件中调用</remarks>
-        public DecodedMessage ReadNewMsg()
+        public DecodedMessage ReadNewMsg(out int sMsgIndex)
         {
-            return ReadMsgByIndex(newMsgIndexQueue.Dequeue());
+            sMsgIndex = newMsgIndexQueue.Dequeue();
+            return ReadMsgByIndex(sMsgIndex);
         }
 
         /// <summary>
@@ -470,7 +553,7 @@ namespace GSMMODEM
                 }
             }
 
-            return pe.PDUDecoder(temp);
+            return pe.PDUDecoder(index,temp);
             //return msgCenter + "," + phone + "," + time + "," + msg;
         }
 
@@ -484,12 +567,54 @@ namespace GSMMODEM
         /// <param name="index">The index.</param>
         public void DeleteMsgByIndex(int index)
         {
-            if (SendAT("AT+CMGD=" + index.ToString()).Trim() == "OK")
+
+            string sATResult = "";
+            sATResult = SendAT("AT+CMGD=" + index.ToString()).Trim();
+
+            if (sATResult == "OK")
             {
                 return;
             }
 
-            throw new Exception("删除失败");
+            throw new Exception("删除失败:" + sATResult);
+        }
+
+        /// <summary>
+        /// 删除已读短信
+        /// </summary>
+        /// <returns>返回已删除条数（Out位置）</returns>
+        public int DeletereadMsg(out string SmsIndexs)
+        {
+            List<DecodedMessage> result = new List<DecodedMessage>();
+            string[] temp = null;
+            string tmp = string.Empty;
+            int iCurIndex = 0;
+            SmsIndexs = string.Empty;
+            int iMsgCount = 0;
+
+            tmp = SendAT("AT+CMGL=1");
+            if (tmp.Contains("OK"))
+            {
+                temp = tmp.Split('\r');
+            }
+
+            PDUEncoding pe = new PDUEncoding();
+            foreach (string str in temp)
+            {
+                if (str != null)   //短信PDU长度仅仅短信中心就18个字符
+                {
+                    if (str.Substring(0, 6) == "+CMTI:")
+                    {
+                        iCurIndex = Convert.ToInt32(str.Split(',')[1]);  //存储新信息序号
+                        DeleteMsgByIndex(iCurIndex);
+                        iMsgCount++;
+                        SmsIndexs += iCurIndex +",";
+
+                    }
+                }
+            }
+
+            return iMsgCount;
         }
 
         #endregion 删除短信
