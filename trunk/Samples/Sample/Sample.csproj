@@ -36,9 +36,6 @@
     <ApplicationIcon>AT.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GSMMODEM">
-      <HintPath>..\..\src\GSMMODEM\bin\Debug\GSMMODEM.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -81,6 +78,12 @@
   <ItemGroup>
     <Content Include="AT.ico" />
     <None Include="Resources\短信猫.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GSMMODEM\GSMMODEM.csproj">
+      <Project>{FB9F3FF1-0B65-4FF7-AFBA-4DC918FCDDE4}</Project>
+      <Name>GSMMODEM</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
