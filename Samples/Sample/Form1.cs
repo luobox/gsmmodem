@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO.Ports;
 using System.Windows.Forms;
@@ -271,7 +270,6 @@ namespace 短信猫
             label10.Text = textBox2.Text.Length + "字";
             label10.ForeColor = Color.Green;
         }
- 
 
         private void LogInfo(string sLogInfo){
             txtLogInfo.AppendText( System.DateTime.Now+":" + sLogInfo + "\r\n");
@@ -294,32 +292,5 @@ namespace 短信猫
             }
             LogInfo("SendAT:" + txtATCMD.Text + " Result:" + sResult);
         }
-
-        private void btn_allunread_Click(object sender, EventArgs e)
-        {
-            List<DecodedMessage> result;
-            string sResult  = "";
-            if (gm.IsOpen)
-            {
-                try
-                {
-                     result =  gm.GetUnreadMsg();
-                     for (int i = 0; i < result.Count; i++)
-                     {
-                         DecodedMessage dm = result[i];
-                         sResult += "Index：" + dm.SmsIndex + "短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
-                                 "短信内容：" + dm.SmsContent + "\r\n" + "发送时间：" + dm.SendTime;
-                     }
-                }
-                catch (Exception ee)
-                {
-                    LogInfo("allunread:at+cmgl=0 Exception:" + ee.ToString());
-                    return;
-                }
-
-            }
-            LogInfo("allunread:at+cmgl=0 Result:" + sResult);
-        }
- 
     }
 }

@@ -63,13 +63,10 @@ namespace GSMMODEM
                 {
                     value = value.TrimStart('+');
 
-                    /*
-                     * 由于86只适用于国内，因而不加
                     if (value.Substring(0, 2) != "86")
                     {
                         value = "86" + value;
                     }
-                     */
 
                     value = "91" + ParityChange(value);
                     serviceCenterAddress = (value.Length / 2).ToString("X2") + value;
@@ -503,7 +500,6 @@ namespace GSMMODEM
                         }
                     }
                 }
-                return result;
             }
 
             //不是长短信
@@ -654,21 +650,9 @@ namespace GSMMODEM
         public DecodedMessage PDUDecoder(string strPDU) {
             return PDUDecoder(0, strPDU);
         }
-
         public DecodedMessage PDUDecoder(int SmsIndex,string strPDU)
         {
-            
-			int lenSCA = 0; //错误PDU时可能抛出异常
-            try
-            {
-                lenSCA = Convert.ToInt32(strPDU.Substring(0, 2), 16) * 2 + 2;       //短消息中心占长度
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message + " PDU:" + strPDU);
-            }
-			//int lenSCA = Convert.ToInt32(strPDU.Substring(0, 2), 16) * 2 + 2;       //短消息中心占长度
-
+            int lenSCA = Convert.ToInt32(strPDU.Substring(0, 2), 16) * 2 + 2;       //短消息中心占长度
             serviceCenterAddress = strPDU.Substring(0, lenSCA);
 
             //PDU-type位组
@@ -712,7 +696,7 @@ namespace GSMMODEM
                     byte byt = Convert.ToByte(strPDU.Substring(lenSCA + lenOA + 22 + 6 * 2, 2), 16);
                     char first = (char)(byt >> 1);
 
-                    return new DecodedMessage(SmsIndex,strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
+                    return new DecodedMessage(SmsIndex, strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
                         + strPDU.Substring(lenSCA + lenOA + 22 + 3 * 2, 2)
                         , ServiceCenterAddress
                         , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
@@ -724,7 +708,7 @@ namespace GSMMODEM
             }
 
             userData = strPDU.Substring(lenSCA + lenOA + 22);
-            return new DecodedMessage(SmsIndex,"010100"
+            return new DecodedMessage(SmsIndex, "010100"
                 , ServiceCenterAddress
                 , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
                 + ServiceCenterTimeStamp.Substring(6, 2) + " " + ServiceCenterTimeStamp.Substring(8, 2) + ":"

@@ -14,7 +14,6 @@ namespace GSMMODEM
         /// <summary>
         /// 构造函数 
         /// </summary>
-        /// <param name="SmsIndex">短信序号</param>
         /// <param name="serviceCenterAddress">短信中心号码</param>
         /// <param name="sendTime">发送时间 字符串</param>
         /// <param name="phoneNumber">手机号码</param>
@@ -26,7 +25,6 @@ namespace GSMMODEM
         /// <summary>
         /// 构造函数
         /// </summary>
-        /// <param name="sIndex">短信序号</param>
         /// <param name="head">长短信 头部（非常短信 本参数为 010100）</param>
         /// <param name="serviceCenterAddress">短信中心</param>
         /// <param name="sendTime">发送时间 字串</param>
