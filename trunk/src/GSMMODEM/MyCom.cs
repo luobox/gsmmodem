@@ -168,12 +168,32 @@ namespace GSMMODEM
 
         public string ReadExisting()
         {
-            return sp.ReadExisting();
+            string sResult = string.Empty;
+            try
+            {
+                sResult = sp.ReadExisting();
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return sResult;
         }
 
         public string ReadLine()
         {
-            return sp.ReadLine();
+            string sResult = string.Empty;
+            try
+            {
+                sResult = sp.ReadLine();
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return sResult;
         }
 
         public string ReadTo(string value)

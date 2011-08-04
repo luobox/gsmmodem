@@ -59,6 +59,8 @@
             this.txtLogInfo = new System.Windows.Forms.TextBox();
             this.txtATCMD = new System.Windows.Forms.TextBox();
             this.btnSendAT = new System.Windows.Forms.Button();
+            this.btn_allunread = new System.Windows.Forms.Button();
+
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -357,17 +359,30 @@
             this.btnSendAT.TabIndex = 15;
             this.btnSendAT.Text = "AT指令";
             this.btnSendAT.UseVisualStyleBackColor = true;
-            this.btnSendAT.Click += new System.EventHandler(this.btnSendAT_Click);
+            this.btnSendAT.Click += new System.EventHandler(btnSendAT_Click); // new System.EventHandler(this.btnSendAT_Click);
             // 
+            // btn_allunread
+            // 
+            this.btn_allunread.Location = new System.Drawing.Point(494, 151);
+            this.btn_allunread.Name = "btn_allunread";
+            this.btn_allunread.Size = new System.Drawing.Size(72, 23);
+            this.btn_allunread.TabIndex = 16;
+            this.btn_allunread.Text = "所有未读";
+            this.btn_allunread.UseVisualStyleBackColor = true;
+            this.btn_allunread.Click += new System.EventHandler(this.btn_allunread_Click);
+            // 
+ 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(584, 519);
+            this.Controls.Add(this.btn_allunread);
             this.Controls.Add(this.btnSendAT);
             this.Controls.Add(this.txtATCMD);
             this.Controls.Add(this.txtLogInfo);
+
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label3);
@@ -425,6 +440,8 @@
         private System.Windows.Forms.TextBox txtLogInfo;
         private System.Windows.Forms.TextBox txtATCMD;
         private System.Windows.Forms.Button btnSendAT;
+        private System.Windows.Forms.Button btn_allunread;
+
     }
 }
 
