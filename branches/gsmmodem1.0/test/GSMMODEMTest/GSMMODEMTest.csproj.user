@@ -2,6 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartAction>Program</StartAction>
-    <StartProgram>..\tools\xUnit.net1.8\xunit.gui.exe</StartProgram>
+    <StartProgram>tools\xUnit.net1.8\xunit.gui.exe</StartProgram>
   </PropertyGroup>
 </Project>
