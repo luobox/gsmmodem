@@ -22,7 +22,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Globalization;
 
 namespace GSMMODEM
 {
@@ -64,13 +63,10 @@ namespace GSMMODEM
                 {
                     value = value.TrimStart('+');
 
-                    /*
-                     * 由于86只适用于国内，因而不加
                     if (value.Substring(0, 2) != "86")
                     {
                         value = "86" + value;
                     }
-                     */
 
                     value = "91" + ParityChange(value);
                     serviceCenterAddress = (value.Length / 2).ToString("X2") + value;
@@ -271,7 +267,6 @@ namespace GSMMODEM
                 else
                 {
                     result = PDU7bitContentDecoder(userData);
-                    //result = Gsm7bitDecoding(userData);
                 }
 
                 return result;
@@ -301,12 +296,9 @@ namespace GSMMODEM
 
                     string temp = string.Empty;                                     //存储中间字符串 二进制串
                     string tmp;
-                    byte btemp;
                     for (int i = value.Length; i > 0; i--)                          //高低交换 二进制串
                     {
-                        //对ASCII码转换成7Bit PDU时，需进行转换；
-                        btemp = ASCII2EQ7BIT(bytes[i - 1]);
-                        tmp = Convert.ToString(btemp, 2);
+                        tmp = Convert.ToString(bytes[i - 1], 2);
                         while (tmp.Length < 7)                                      //不够7位，补齐
                         {
                             tmp = "0" + tmp;
@@ -427,7 +419,7 @@ namespace GSMMODEM
 
             for (int i = 0; i < temp.Length; i += 7)
             {
-                bytes[i / 7] = EQ7BIT2ASCII(Convert.ToByte(temp.Substring(i, 7), 2));
+                bytes[i / 7] = Convert.ToByte(temp.Substring(i, 7), 2);
             }
 
             Array.Reverse(bytes);
@@ -508,16 +500,15 @@ namespace GSMMODEM
                         }
                     }
                 }
-                return result;
             }
-
-            //不是长短信
-            ProtocolDataUnitType = "11";
-            UserData = Text;
-            result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
-                + messageReference + destinationAddress + protocolIdentifer
-                + dataCodingScheme + validityPeriod + userDataLenghth + userData));
-
+            else        //不是长短信
+            {
+                ProtocolDataUnitType = "11";
+                UserData = Text;
+                result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
+                    + messageReference + destinationAddress + protocolIdentifer
+                    + dataCodingScheme + validityPeriod + userDataLenghth + userData));
+            }
             return result;
         }
 
@@ -656,25 +647,9 @@ namespace GSMMODEM
         /// </summary>
         /// <param name="strPDU">短信PDU字符串</param>
         /// <returns>信息字符串（MMNN,中心号码，手机号码，发送时间，短信内容 MM这批短信总条数 NN本条所在序号）</returns>
-        public DecodedMessage PDUDecoder(string strPDU) {
-            return PDUDecoder(0, strPDU);
-        }
-
-
-        public DecodedMessage PDUDecoder(int SmsIndex,string strPDU)
+        public DecodedMessage PDUDecoder(string strPDU)
         {
-            
-			int lenSCA = 0; //错误PDU时可能抛出异常
-            try
-            {
-                lenSCA = Convert.ToInt32(strPDU.Substring(0, 2), 16) * 2 + 2;       //短消息中心占长度
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message + " PDU:" + strPDU);
-            }
-			//int lenSCA = Convert.ToInt32(strPDU.Substring(0, 2), 16) * 2 + 2;       //短消息中心占长度
-
+            int lenSCA = Convert.ToInt32(strPDU.Substring(0, 2), 16) * 2 + 2;       //短消息中心占长度
             serviceCenterAddress = strPDU.Substring(0, lenSCA);
 
             //PDU-type位组
@@ -702,7 +677,7 @@ namespace GSMMODEM
                     userDataLenghth = (Convert.ToInt16(strPDU.Substring(lenSCA + lenOA + 20, 2), 16) - 6).ToString("X2");
                     userData = strPDU.Substring(lenSCA + lenOA + 22 + 6 * 2);
 
-                    return new DecodedMessage(SmsIndex,strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
+                    return new DecodedMessage(strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
                         + strPDU.Substring(lenSCA + lenOA + 22 + 3 * 2, 2)
                         , ServiceCenterAddress
                         , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
@@ -718,7 +693,7 @@ namespace GSMMODEM
                     byte byt = Convert.ToByte(strPDU.Substring(lenSCA + lenOA + 22 + 6 * 2, 2), 16);
                     char first = (char)(byt >> 1);
 
-                    return new DecodedMessage(SmsIndex,strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
+                    return new DecodedMessage(strPDU.Substring(lenSCA + lenOA + 22 + 4 * 2, 2 * 2)
                         + strPDU.Substring(lenSCA + lenOA + 22 + 3 * 2, 2)
                         , ServiceCenterAddress
                         , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
@@ -730,234 +705,14 @@ namespace GSMMODEM
             }
 
             userData = strPDU.Substring(lenSCA + lenOA + 22);
-
-            return new DecodedMessage(SmsIndex,"010100"
+            return new DecodedMessage("010100"
                 , ServiceCenterAddress
                 , ServiceCenterTimeStamp.Substring(0, 4) + "-" + ServiceCenterTimeStamp.Substring(4, 2) + "-"
                 + ServiceCenterTimeStamp.Substring(6, 2) + " " + ServiceCenterTimeStamp.Substring(8, 2) + ":"
                 + ServiceCenterTimeStamp.Substring(10, 2) + ":" + ServiceCenterTimeStamp.Substring(12, 2)
                 , OriginatorAddress
-                ,UserData);
-        } 
-
-        //短信7Bit编码与ASCII码不一致的对应关系转换
-        //Daniel Wang 2011-09-01
-        //
-        public static byte EQ7BIT2ASCII(byte EQ7Bit) {
-
-            byte bResult = 0;
-            switch (EQ7Bit)
-            {
-                case 0: bResult = 64; break;
-                case 1: bResult = 163; break;
-                case 2: bResult = 36; break;
-                case 3: bResult = 165; break;
-                case 4: bResult = 232; break;
-                case 5: bResult = 233; break;
-                case 6: bResult = 249; break;
-                case 7: bResult = 236; break;
-                case 8: bResult = 242; break;
-                case 9: bResult = 199; break;
-                case 11: bResult = 216; break;
-                case 12: bResult = 248; break;
-                case 14: bResult = 197; break;
-                case 15: bResult = 229; break;
-                case 17: bResult = 95; break;
-                case 28: bResult = 198; break;
-                case 29: bResult = 230; break;
-                case 30: bResult = 223; break;
-                case 31: bResult = 201; break;
-                case 36: bResult = 164; break;
-                case 64: bResult = 161; break;
-                case 91: bResult = 196; break;
-                case 92: bResult = 204; break;
-                case 93: bResult = 209; break;
-                case 94: bResult = 220; break;
-                case 95: bResult = 167; break;
-                case 96: bResult = 191; break;
-                case 123: bResult = 228; break;
-                case 124: bResult = 246; break;
-                case 125: bResult = 241; break;
-                case 126: bResult = 252; break;
-                case 127: bResult = 224; break;
-                default: bResult = EQ7Bit; break;
-            }
-            return bResult;
+                , UserData);
         }
-        //Ascii to EQ7Bit
-        public static byte ASCII2EQ7BIT(byte ASCIIC)
-        {
-
-            byte bResult = 0;
-            switch (ASCIIC)
-            {
-                case 64: bResult = 0; break;
-                case 163: bResult = 1; break;
-                case 36: bResult = 2; break;
-                case 165: bResult = 3; break;
-                case 232: bResult = 4; break;
-                case 233: bResult = 5; break;
-                case 249: bResult = 6; break;
-                case 236: bResult = 7; break;
-                case 242: bResult = 8; break;
-                case 199: bResult = 9; break;
-                case 216: bResult = 11; break;
-                case 248: bResult = 12; break;
-                case 197: bResult = 14; break;
-                case 229: bResult = 15; break;
-                case 95: bResult = 17; break;
-                case 198: bResult = 28; break;
-                case 230: bResult = 29; break;
-                case 223: bResult = 30; break;
-                case 201: bResult = 31; break;
-                case 164: bResult = 36; break;
-                case 161: bResult = 64; break;
-                case 196: bResult = 91; break;
-                case 204: bResult = 92; break;
-                case 209: bResult = 93; break;
-                case 220: bResult = 94; break;
-                case 167: bResult = 95; break;
-                case 191: bResult = 96; break;
-                case 228: bResult = 123; break;
-                case 246: bResult = 124; break;
-                case 241: bResult = 125; break;
-                case 252: bResult = 126; break;
-                case 224: bResult = 127; break;
-                default: bResult = ASCIIC; break;
-            }
-            return bResult;
-        }
-        /*
-         * 完整对应关系
-           EQ7BIT2ASCII[0]  := 64;
-           EQ7BIT2ASCII[1]  := 163;
-           EQ7BIT2ASCII[2]  := 36;
-           EQ7BIT2ASCII[3]  := 165;
-           EQ7BIT2ASCII[4]  := 232;
-           EQ7BIT2ASCII[5]  := 233;
-           EQ7BIT2ASCII[6]  := 249;
-           EQ7BIT2ASCII[7]  := 236;
-           EQ7BIT2ASCII[8]  := 242;
-           EQ7BIT2ASCII[9]  := 199;
-           EQ7BIT2ASCII[10] := 10;
-           EQ7BIT2ASCII[11] := 216;
-           EQ7BIT2ASCII[12] := 248;
-           EQ7BIT2ASCII[13] := 13;
-           EQ7BIT2ASCII[14] := 197;
-           EQ7BIT2ASCII[15] := 229;
-           EQ7BIT2ASCII[16] := Nono;
-           EQ7BIT2ASCII[17] := 95;
-           EQ7BIT2ASCII[18] := Nono;
-           EQ7BIT2ASCII[19] := Nono;
-           EQ7BIT2ASCII[20] := Nono;
-           EQ7BIT2ASCII[21] := Nono;
-           EQ7BIT2ASCII[22] := Nono;
-           EQ7BIT2ASCII[23] := Nono;
-           EQ7BIT2ASCII[24] := Nono;
-           EQ7BIT2ASCII[25] := Nono;
-           EQ7BIT2ASCII[26] := Nono;
-           EQ7BIT2ASCII[27] := Nono;
-           EQ7BIT2ASCII[28] := 198;
-           EQ7BIT2ASCII[29] := 230;
-           EQ7BIT2ASCII[30] := 223;
-           EQ7BIT2ASCII[31] := 201;
-           EQ7BIT2ASCII[32] := 32;
-           EQ7BIT2ASCII[33] := 33;
-           EQ7BIT2ASCII[34] := 34;
-           EQ7BIT2ASCII[35] := 35;
-           EQ7BIT2ASCII[36] := 164;
-           EQ7BIT2ASCII[37] := 37;
-           EQ7BIT2ASCII[38] := 38;
-           EQ7BIT2ASCII[39] := 39;
-           EQ7BIT2ASCII[40] := 40;
-           EQ7BIT2ASCII[41] := 41;
-           EQ7BIT2ASCII[42] := 42;
-           EQ7BIT2ASCII[43] := 43;
-           EQ7BIT2ASCII[44] := 44;
-           EQ7BIT2ASCII[45] := 45;
-           EQ7BIT2ASCII[46] := 46;
-           EQ7BIT2ASCII[47] := 47;
-           EQ7BIT2ASCII[48] := 48;
-           EQ7BIT2ASCII[49] := 49;
-           EQ7BIT2ASCII[50] := 50;
-           EQ7BIT2ASCII[51] := 51;
-           EQ7BIT2ASCII[52] := 52;
-           EQ7BIT2ASCII[53] := 53;
-           EQ7BIT2ASCII[54] := 54;
-           EQ7BIT2ASCII[55] := 55;
-           EQ7BIT2ASCII[56] := 56;
-           EQ7BIT2ASCII[57] := 57;
-           EQ7BIT2ASCII[58] := 58;
-           EQ7BIT2ASCII[59] := 59;
-           EQ7BIT2ASCII[60] := 60;
-           EQ7BIT2ASCII[61] := 61;
-           EQ7BIT2ASCII[62] := 62;
-           EQ7BIT2ASCII[63] := 63;
-           EQ7BIT2ASCII[64] := 161;
-           EQ7BIT2ASCII[65] := 65;
-           EQ7BIT2ASCII[66] := 66;
-           EQ7BIT2ASCII[67] := 67;
-           EQ7BIT2ASCII[68] := 68;
-           EQ7BIT2ASCII[69] := 69;
-           EQ7BIT2ASCII[70] := 70;
-           EQ7BIT2ASCII[71] := 71;
-           EQ7BIT2ASCII[72] := 72;
-           EQ7BIT2ASCII[73] := 73;
-           EQ7BIT2ASCII[74] := 74;
-           EQ7BIT2ASCII[75] := 75;
-           EQ7BIT2ASCII[76] := 76;
-           EQ7BIT2ASCII[77] := 77;
-           EQ7BIT2ASCII[78] := 78;
-           EQ7BIT2ASCII[79] := 79;
-           EQ7BIT2ASCII[80] := 80;
-           EQ7BIT2ASCII[81] := 81;
-           EQ7BIT2ASCII[82] := 82;
-           EQ7BIT2ASCII[83] := 83;
-           EQ7BIT2ASCII[84] := 84;
-           EQ7BIT2ASCII[85] := 85;
-           EQ7BIT2ASCII[86] := 86;
-           EQ7BIT2ASCII[87] := 87;
-           EQ7BIT2ASCII[88] := 88;
-           EQ7BIT2ASCII[89] := 89;
-           EQ7BIT2ASCII[90] := 90;
-           EQ7BIT2ASCII[91] := 196;
-           EQ7BIT2ASCII[92] := 204;
-           EQ7BIT2ASCII[93] := 209;
-           EQ7BIT2ASCII[94] := 220;
-           EQ7BIT2ASCII[95] := 167;
-           EQ7BIT2ASCII[96] := 191;
-           EQ7BIT2ASCII[97] := 97;
-           EQ7BIT2ASCII[98] := 98;
-           EQ7BIT2ASCII[99] := 99;
-           EQ7BIT2ASCII[100] := 100;
-           EQ7BIT2ASCII[101] := 101;
-           EQ7BIT2ASCII[102] := 102;
-           EQ7BIT2ASCII[103] := 103;
-           EQ7BIT2ASCII[104] := 104;
-           EQ7BIT2ASCII[105] := 105;
-           EQ7BIT2ASCII[106] := 106;
-           EQ7BIT2ASCII[107] := 107;
-           EQ7BIT2ASCII[108] := 108;
-           EQ7BIT2ASCII[109] := 109;
-           EQ7BIT2ASCII[110] := 110;
-           EQ7BIT2ASCII[111] := 111;
-           EQ7BIT2ASCII[112] := 112;
-           EQ7BIT2ASCII[113] := 113;
-           EQ7BIT2ASCII[114] := 114;
-           EQ7BIT2ASCII[115] := 115;
-           EQ7BIT2ASCII[116] := 116;
-           EQ7BIT2ASCII[117] := 117;
-           EQ7BIT2ASCII[118] := 118;
-           EQ7BIT2ASCII[119] := 119;
-           EQ7BIT2ASCII[120] := 120;
-           EQ7BIT2ASCII[121] := 121;
-           EQ7BIT2ASCII[122] := 122;
-           EQ7BIT2ASCII[123] := 228;
-           EQ7BIT2ASCII[124] := 246;
-           EQ7BIT2ASCII[125] := 241;
-           EQ7BIT2ASCII[126] := 252;
-           EQ7BIT2ASCII[127] := 224;
-         */
 
         #endregion 解码
 

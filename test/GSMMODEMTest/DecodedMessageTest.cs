@@ -16,7 +16,7 @@ namespace GSMMODEMTest
             string t = "2011-05-29 10:53:20";
             string p = "15050850677";
             string c = "你好";
-            DecodedMessage dm = new DecodedMessage(0,sca, t, p, c);
+            DecodedMessage dm = new DecodedMessage(sca, t, p, c);
 
             Assert.Equal(sca, dm.ServiceCenterAddress);
             Assert.Equal(t, dm.SendTime.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -32,7 +32,7 @@ namespace GSMMODEMTest
             string t = "2011-05-20 21:30:59";
             string p = "8615050850677";
             string c = "GUDGKVBBgsscghjgdbgdfggrddswdh.kjhffyyhujko(;;((((((((())))))))))(;;..:,,((((((((((((.::...)))))))))))))....;;;;((((((((((((((;..:..;;((((.))))))))))))))";
-            DecodedMessage dm = new DecodedMessage(0,head,sca, t, p, c);
+            DecodedMessage dm = new DecodedMessage(head,sca, t, p, c);
 
             Assert.Equal(sca, dm.ServiceCenterAddress);
             Assert.Equal(t, dm.SendTime.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -48,9 +48,9 @@ namespace GSMMODEMTest
             string t = "2011-05-20 21:30:59";
             string p = "8615050850677";
             string c = "GUDGKVBBgsscghjgdbgdfggrddswdh.kjhffyyhujko(;;((((((((())))))))))(;;..:,,((((((((((((.::...)))))))))))))....;;;;((((((((((((((;..:..;;((((.))))))))))))))";
-            DecodedMessage dm = new DecodedMessage(0,head, sca, t, p, c);
+            DecodedMessage dm = new DecodedMessage(head, sca, t, p, c);
 
-            dm.Add(new DecodedMessage(0,"0202B2", sca, "2011-05-20 21:31:01", p, ")))))))."));
+            dm.Add(new DecodedMessage("0202B2", sca, "2011-05-20 21:31:01", p, ")))))))."));
 
             Assert.Equal(sca, dm.ServiceCenterAddress);
             Assert.Equal("2011-05-20 21:31:01", dm.SendTime.ToString("yyyy-MM-dd HH:mm:ss"));

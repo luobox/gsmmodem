@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO.Ports;
 using System.Windows.Forms;
@@ -88,30 +87,16 @@ namespace 短信猫
         {
             if (gm.IsOpen == false)
             {
-                string sResult = "";
                 try
                 {
-                    gm.Open(out sResult);
+                    gm.Open();
                     label3.Text = "连接成功";
                     label3.ForeColor = Color.Green;
-                    LogInfo(sResult);
-
                 }
-                catch (Exception ee)
+                catch
                 {
-                    LogInfo("Connect Modem: Exception:" + ee.ToString() + " sResult:" + sResult);
                     label3.Text = "连接失败";
                     label3.ForeColor = Color.Red;
-                }
-                 
-                try {
-                    string gmInfo = gm.GetMachineNo();
-                    LogInfo(" Connect Modem:" + gmInfo);
-                }
-                catch (Exception ee)
-                {
-                    LogInfo("Get Modem Info Exception:" + ee.ToString());
-                     
                 }
             }
             else
@@ -154,9 +139,8 @@ namespace 短信猫
                 {
                     gm.SendMsg(textBox1.Text, textBox2.Text);
                 }
-                catch (Exception ee)
+                catch
                 {
-                    LogInfo("SendMsg: Exception:" + ee.ToString());
                     label6.Text = "发送失败";
                     label6.ForeColor = Color.Red;
                     return;
@@ -180,14 +164,13 @@ namespace 短信猫
                 try
                 {
                     DecodedMessage dm = gm.ReadMsgByIndex(Convert.ToInt32(textBox3.Text));
-                    textBox4.Text = "Index：" + dm.SmsIndex + "短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
+                    textBox4.Text = "短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
                             "短信内容：" + dm.SmsContent + "\r\n" + "发送时间：" + dm.SendTime;
                     label9.Text = "读取成功";
                     label9.ForeColor = Color.Green;
                 }
-                catch (Exception ee)
+                catch
                 {
-                    LogInfo("ReadMsgByIndex: Exception:" + ee.ToString());
                     label9.Text = "读取失败";
                     label9.ForeColor = Color.Red;
                     return;
@@ -217,16 +200,14 @@ namespace 短信猫
             {
                 try
                 {
-                    int sMsgIndex = 0;
-                    DecodedMessage dm = gm.ReadNewMsg(out sMsgIndex);
-                    textBox5.Text = "Index：" + dm.SmsIndex + "\r\n 短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
+                    DecodedMessage dm = gm.ReadNewMsg();
+                    textBox5.Text = "短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
                             "短信内容：" + dm.SmsContent + "\r\n" + "发送时间：" + dm.SendTime;
                     label8.Text = "读取成功";
                     label8.ForeColor = Color.Green;
                 }
-                catch (Exception ee)
+                catch
                 {
-                    LogInfo("ReadNewMsg: Exception:" + ee.ToString());
                     label8.Text = "读取失败";
                     label8.ForeColor = Color.Red;
                     return;
@@ -248,9 +229,8 @@ namespace 短信猫
                 {
                     gm.DeleteMsgByIndex(Convert.ToInt32(textBox3.Text));
                 }
-                catch(Exception ee)
+                catch
                 {
-                    LogInfo("DeleteMsg:" + Convert.ToInt32(textBox3.Text) + " Exception:" + ee.ToString());
                     label9.Text = "删除失败";
                     label9.ForeColor = Color.Red;
                     return;
@@ -271,55 +251,5 @@ namespace 短信猫
             label10.Text = textBox2.Text.Length + "字";
             label10.ForeColor = Color.Green;
         }
- 
-
-        private void LogInfo(string sLogInfo){
-            txtLogInfo.AppendText( System.DateTime.Now+":" + sLogInfo + "\r\n");
-        }
-
-        private void btnSendAT_Click(object sender, EventArgs e)
-        {
-            string sResult = "";
-            if (gm.IsOpen) {
-                try
-                {
-                    sResult = gm.SendAT(txtATCMD.Text);
-                }
-                catch (Exception ee)
-                {
-                    LogInfo("SendAT:" + txtATCMD.Text + " Exception:" + ee.ToString());
-                    return;
-                }            
-               
-            }
-            LogInfo("SendAT:" + txtATCMD.Text + " Result:" + sResult);
-        }
-
-        private void btn_allunread_Click(object sender, EventArgs e)
-        {
-            List<DecodedMessage> result;
-            string sResult  = "";
-            if (gm.IsOpen)
-            {
-                try
-                {
-                     result =  gm.GetUnreadMsg();
-                     for (int i = 0; i < result.Count; i++)
-                     {
-                         DecodedMessage dm = result[i];
-                         sResult += "Index：" + dm.SmsIndex + "短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
-                                 "短信内容：" + dm.SmsContent + "\r\n" + "发送时间：" + dm.SendTime;
-                     }
-                }
-                catch (Exception ee)
-                {
-                    LogInfo("allunread:at+cmgl=0 Exception:" + ee.ToString());
-                    return;
-                }
-
-            }
-            LogInfo("allunread:at+cmgl=0 Result:" + sResult);
-        }
- 
     }
 }
