@@ -501,14 +501,14 @@ namespace GSMMODEM
                     }
                 }
             }
-
-            //不是长短信
-            ProtocolDataUnitType = "11";
-            UserData = Text;
-            result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
-                + messageReference + destinationAddress + protocolIdentifer
-                + dataCodingScheme + validityPeriod + userDataLenghth + userData));
-
+            else        //不是长短信
+            {
+                ProtocolDataUnitType = "11";
+                UserData = Text;
+                result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
+                    + messageReference + destinationAddress + protocolIdentifer
+                    + dataCodingScheme + validityPeriod + userDataLenghth + userData));
+            }
             return result;
         }
 
