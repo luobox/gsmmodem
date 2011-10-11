@@ -303,13 +303,15 @@ namespace 短信猫
             {
                 try
                 {
-                     result =  gm.GetUnreadMsg();
-                     for (int i = 0; i < result.Count; i++)
-                     {
-                         DecodedMessage dm = result[i];
-                         sResult += "Index：" + dm.SmsIndex + "短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
-                                 "短信内容：" + dm.SmsContent + "\r\n" + "发送时间：" + dm.SendTime;
-                     }
+
+                    result = gm.GetUnreadMsg(out sResult);
+
+                    for (int i = 0; i < result.Count; i++)
+                    {
+                        DecodedMessage dm = result[i];
+                        sResult += "Index：" + dm.SmsIndex + "短信中心：" + dm.ServiceCenterAddress + "\r\n" + "手机号码：" + dm.PhoneNumber + "\r\n" +
+                                "短信内容：" + dm.SmsContent + "\r\n" + "发送时间：" + dm.SendTime;
+                    }
                 }
                 catch (Exception ee)
                 {

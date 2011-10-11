@@ -64,7 +64,8 @@ namespace GSMMODEMTest
         [Fact]
         public void GetUnreadMsgTest()
         {
-            List<DecodedMessage> ldm = gm.GetUnreadMsg();
+            string sResult = "";
+            List<DecodedMessage> ldm = gm.GetUnreadMsg(out sResult);
             Assert.Equal(3, ldm.Count);
         }
     }
