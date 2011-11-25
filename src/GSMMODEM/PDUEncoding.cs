@@ -253,25 +253,32 @@ namespace GSMMODEM
             get
             {
                 string result = string.Empty;
-
-                if (dataCodingScheme.Substring(1, 1) == "8")             //USC2编码
+                try
                 {
-                    int len = Convert.ToInt32(userDataLenghth, 16) * 2;
-
-                    //四个一组，每组译为一个USC2字符
-                    for (int i = 0; i < len; i += 4)
+                    if (dataCodingScheme.Substring(1, 1) == "8")             //USC2编码
                     {
-                        string temp = userData.Substring(i, 4);
+                        int len = Convert.ToInt32(userDataLenghth, 16) * 2;
 
-                        int byte1 = Convert.ToInt16(temp, 16);
+                        //四个一组，每组译为一个USC2字符
+                        for (int i = 0; i < len; i += 4)
+                        {
+                            string temp = userData.Substring(i, 4);
 
-                        result += ((char)byte1).ToString();
+                            int byte1 = Convert.ToInt16(temp, 16);
+
+                            result += ((char)byte1).ToString();
+                        }
+                    }
+                    else
+                    {
+                        result = PDU7bitContentDecoder(userData);
+                        //result = Gsm7bitDecoding(userData);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    result = PDU7bitContentDecoder(userData);
-                    //result = Gsm7bitDecoding(userData);
+                    //由于解码出来SubString中引用的长度与字StrPdu实际长度不一致，因而加大异常捕获范围
+                    throw new Exception(ex.Message + " GetUserData:" + userData);
                 }
 
                 return result;

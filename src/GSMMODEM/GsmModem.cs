@@ -483,6 +483,15 @@ namespace GSMMODEM
         /// <returns>未读信息列表（中心号码，手机号码，发送时间，短信内容）</returns>
         public List<DecodedMessage> GetUnreadMsg(out string sInfo)
         {
+            return GetReceiveMsg(0,out sInfo);
+        }
+
+        /// <summary>
+        /// 获取已读或未读信息列表
+        /// </summary>
+        /// <returns>未读信息列表（中心号码，手机号码，发送时间，短信内容）</returns>
+        public List<DecodedMessage> GetReceiveMsg(int iMsgType,out string sInfo)
+        {
             List<DecodedMessage> result = new List<DecodedMessage>();
             string[] temp = null;
             string tmp = string.Empty;
@@ -490,7 +499,10 @@ namespace GSMMODEM
             int iCurIndex = 0;
             sInfo = "";
 
-            tmp = SendAT("AT+CMGL=0");
+            if (iMsgType != 1) iMsgType = 0;
+
+            tmp = SendAT("AT+CMGL=" + iMsgType);
+
             if (tmp.Contains("OK"))
             {
                 temp = tmp.Split('\r');
@@ -504,7 +516,7 @@ namespace GSMMODEM
                         {
                             iCurIndex = Convert.ToInt32(sRead.Split(',')[0].Substring(6));  //存储新信息序号
                         }
-                        if (sRead.Length > 18)
+                        if (sRead.Length > 30)
                         {
                             try
                             {
@@ -512,7 +524,7 @@ namespace GSMMODEM
                             }
                             catch (Exception ex)
                             {
-                                sInfo += " DECODER:" + ex.ToString();
+                                sInfo += " DECODER:" + ex.ToString() + " ReadPDUindex: " + iCurIndex + " sReadPDU:" + sRead;
                                 //return result;
                                 //throw ex;
                             }
