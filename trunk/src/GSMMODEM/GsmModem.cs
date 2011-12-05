@@ -145,6 +145,25 @@ namespace GSMMODEM
             }
         }
 
+        private string ModemStatusMsg = "";
+
+        /// <summary>
+        /// ModemMsg
+        /// 用于存储和清理ModemMsg等待处理提示状态等信息
+        /// 默认为 空
+        /// </summary>
+        public string modemStatusMsg
+        {
+            get
+            {
+                return ModemStatusMsg;
+            }
+            set
+            {
+                ModemStatusMsg = value;
+            }
+        }
+
         private int recvMsgLoc = 1;
 
         /// <summary>
@@ -185,7 +204,19 @@ namespace GSMMODEM
         /// <param name="e"></param>
         void sp_DataReceived(object sender, EventArgs e)
         {
-            string temp = _com.ReadLine();
+            string temp = "";
+            try
+            {
+                temp = _com.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                //throw new Exception("sp_DataReceived ReadLine Exception:" + ex.ToString() );
+                //这个异常暂时不处理，如果Modem不能正常通讯，应在此断开连接重连；
+                ModemStatusMsg = "sp_DataReceived ReadLine Exception:" + ex.ToString();
+                temp = "";
+            }
+
             if (temp.Length > 8)
             {
                 if (temp.Substring(0, 6) == "+CMTI:")
@@ -215,45 +246,12 @@ namespace GSMMODEM
         #region 设备打开与关闭
 
         /// <summary>
-        /// 设备打开函数，无法时打开将引发异常
+        /// 设备打开函数，无法打开时将引发异常
         /// </summary>
         public void Open()
         {
-            //如果串口已打开 则先关闭
-            if (_com.IsOpen)
-            {
-                _com.Close();
-            }
-
-            _com.Open();
-
-            //初始化设备
-            if (_com.IsOpen)
-            {
-                string sResult = "";
-                    
-                try
-                {
-
-                    _com.DataReceived -= sp_DataReceived;
-                    _com.Write("ATE0\r");
-                    Thread.Sleep(200);
-                    sResult += " ATE1:" +_com.ReadExisting();
-                    _com.Write("AT+CMGF=0\r");
-                    Thread.Sleep(200);
-                    sResult += " AT+CMGF=0:" + _com.ReadExisting();
-                    _com.Write("AT+CNMI=2," + recvMsgLoc + "\r");
-                    Thread.Sleep(200);
-                    sResult += " AT+CNMI=2," + recvMsgLoc + ":" + _com.ReadExisting();
-                    _com.DataReceived += sp_DataReceived;
-
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(" Connect Send AT Exception:" + ex.ToString() + " Result:" + sResult);
-                }
-
-            }
+            string sResult = "";
+            bool bResult = Open(out sResult);
         }
 
         /// <summary>
