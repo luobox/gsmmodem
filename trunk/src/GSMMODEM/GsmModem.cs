@@ -518,6 +518,7 @@ namespace GSMMODEM
                         {
                             try
                             {
+                                //sInfo +=  " ReadPDUindex: " + iCurIndex + " sReadPDU:" + sRead;
                                 result.Add(pe.PDUDecoder(iCurIndex, sRead));
                             }
                             catch (Exception ex)

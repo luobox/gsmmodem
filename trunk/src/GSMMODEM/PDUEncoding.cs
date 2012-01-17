@@ -269,6 +269,10 @@ namespace GSMMODEM
                             result += ((char)byte1).ToString();
                         }
                     }
+                     else if (dataCodingScheme.Substring(1, 1) == "4")    //8bit编码
+                    {
+                        result = PDU8bitContentDecoder(userData);
+                    }
                     else
                     {
                         result = PDU7bitContentDecoder(userData);
@@ -461,6 +465,28 @@ namespace GSMMODEM
             result = BinStringof8Bit2AsciiwithReverse(result);
 
             return result;
+        }
+
+
+        /// <summary>
+        /// PDU8bit的解码，供UserData的get访问器调用
+        /// </summary>
+        /// <param name="userData">数据部分PDU字符串</param>
+        /// <returns></returns>
+        private string PDU8bitContentDecoder(string userData)
+        {
+            byte[] buf = new byte[userData.Length / 2];
+
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < userData.Length; i += 2)
+            {
+
+                buf[i / 2] = byte.Parse(userData.Substring(i, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+            }
+
+            return Encoding.ASCII.GetString(buf).Replace("\0", "");
         }
 
         /// <summary>
