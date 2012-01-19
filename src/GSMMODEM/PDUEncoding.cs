@@ -255,7 +255,8 @@ namespace GSMMODEM
                 string result = string.Empty;
                 try
                 {
-                    if (dataCodingScheme.Substring(1, 1) == "8")             //USC2编码
+                    // 采纳 pinghua.huang建议，加入 3G 手机19编码判断为USC2需求
+                    if (dataCodingScheme.Substring(1, 1) == "8" || dataCodingScheme.Substring(1, 1) == "9")             //USC2编码
                     {
                         int len = Convert.ToInt32(userDataLenghth, 16) * 2;
 
@@ -541,16 +542,18 @@ namespace GSMMODEM
                         }
                     }
                 }
-                return result;
+                //return result;
             }
-
-            //不是长短信
-            ProtocolDataUnitType = "11";
-            UserData = Text;
-            result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
-                + messageReference + destinationAddress + protocolIdentifer
-                + dataCodingScheme + validityPeriod + userDataLenghth + userData));
-
+            else
+            {
+                //调整一下写法
+                //不是长短信
+                ProtocolDataUnitType = "11";
+                UserData = Text;
+                result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
+                    + messageReference + destinationAddress + protocolIdentifer
+                    + dataCodingScheme + validityPeriod + userDataLenghth + userData));
+            }               
             return result;
         }
 
