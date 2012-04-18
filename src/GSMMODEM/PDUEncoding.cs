@@ -1,24 +1,4 @@
-﻿/*----------------------------------------------------------------
- *类库GSMMODEM完成通过短信猫发送和接收短信
- *开源地址：http://code.google.com/p/gsmmodem/
- * 
- * 类库GSMMODEM遵循开源协议LGPL
- *有关协议内容参见：http://www.gnu.org/licenses/lgpl.html
- * 
- * Copyright (C) 2011 刘中原
- * 版权所有。 
- * 
- * 文件名： PDUEncoding.cs
- * 
- * 文件功能描述：   完成PDU短信格式的编码与解码
- *              
- * 创建标识：   刘中原20110520
- * 
- * 修改标识：   
- * 修改描述：   
- * 
-**----------------------------------------------------------------*/
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -228,11 +208,11 @@ namespace GSMMODEM
             }
         }
 
-        private string userDataLenghth = "00";
+        private string userDataLength = "00";
         /// <summary>
         /// 用户数据长度(1个8位组)
         /// </summary>
-        public string UserDataLenghth
+        public string UserDataLength
         {
             get
             {
@@ -240,7 +220,7 @@ namespace GSMMODEM
             }
             set
             {
-                userDataLenghth = value;
+                userDataLength = value;
             }
         }
 
@@ -258,7 +238,7 @@ namespace GSMMODEM
                     // 采纳 pinghua.huang建议，加入 3G 手机19编码判断为USC2需求
                     if (dataCodingScheme.Substring(1, 1) == "8" || dataCodingScheme.Substring(1, 1) == "9")             //USC2编码
                     {
-                        int len = Convert.ToInt32(userDataLenghth, 16) * 2;
+                        int len = Convert.ToInt32(userDataLength, 16) * 2;
 
                         //四个一组，每组译为一个USC2字符
                         for (int i = 0; i < len; i += 4)
@@ -301,12 +281,12 @@ namespace GSMMODEM
                     {
                         userData += BitConverter.ToString(Bytes, i, 1);
                     }
-                    userDataLenghth = (userData.Length / 2).ToString("X2");
+                    userDataLength = (userData.Length / 2).ToString("X2");
                 }
                 else                                                                //7bit编码使用
                 {
                     userData = string.Empty;
-                    userDataLenghth = value.Length.ToString("X2");                  //7bit编码 用户数据长度：源字符串长度
+                    userDataLength = value.Length.ToString("X2");                  //7bit编码 用户数据长度：源字符串长度
 
                     Encoding encodingAsscii = Encoding.ASCII;
                     byte[] bytes = encodingAsscii.GetBytes(value);
@@ -431,11 +411,22 @@ namespace GSMMODEM
         /// <returns></returns>
         private string BinStringof8Bit2AsciiwithReverse(string bin)
         {
+            
             string temp = bin;
-            byte[] bytes = new byte[temp.Length / 7];
+            int byteLen = temp.Length / 7;
 
+            //对于7字节编码，转化为Bit7时，将补7bit0,对于这种情况，需按照消息里标示长度去掉补0字符
+            int removeLen = temp.Length % 7;
+            int pduMsgLen = Convert.ToInt32(userDataLength, 16);
+            if (pduMsgLen == (temp.Length / 7 - 1))
+            {
+                removeLen = 7;
+                byteLen = pduMsgLen;
+            }
+
+            byte[] bytes = new byte[byteLen];
             //二进制 不是7倍数 去除前导0
-            temp = temp.Remove(0, temp.Length % 7);
+            temp = temp.Remove(0, removeLen);
 
             for (int i = 0; i < temp.Length; i += 7)
             {
@@ -552,7 +543,7 @@ namespace GSMMODEM
                 UserData = Text;
                 result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
                     + messageReference + destinationAddress + protocolIdentifer
-                    + dataCodingScheme + validityPeriod + userDataLenghth + userData));
+                    + dataCodingScheme + validityPeriod + userDataLength + userData));
             }               
             return result;
         }
@@ -622,7 +613,7 @@ namespace GSMMODEM
 
             result.Add(new CodedMessage(serviceCenterAddress + protocolDataUnitType
                 + messageReference + destinationAddress + protocolIdentifer
-                + dataCodingScheme + validityPeriod + userDataLenghth + userData));
+                + dataCodingScheme + validityPeriod + userDataLength + userData));
 
             return result;
         }
@@ -675,8 +666,8 @@ namespace GSMMODEM
 
             serviceCenterTimeStamp = strPDU.Substring(lenSCA + lenOA + 6, 14);
 
-            userDataLenghth = strPDU.Substring(lenSCA + lenOA + 20, 2);
-            int lenUD = Convert.ToInt32(userDataLenghth, 16) * 2;
+            userDataLength = strPDU.Substring(lenSCA + lenOA + 20, 2);
+            int lenUD = Convert.ToInt32(userDataLength, 16) * 2;
             userData = strPDU.Substring(lenSCA + lenOA + 22);
 
             msgCenter = ServiceCenterAddress;
@@ -726,8 +717,8 @@ namespace GSMMODEM
 
                 serviceCenterTimeStamp = strPDU.Substring(lenSCA + lenOA + 6, 14);
 
-                userDataLenghth = strPDU.Substring(lenSCA + lenOA + 20, 2);
-                int lenUD = Convert.ToInt32(userDataLenghth, 16) * 2;
+                userDataLength = strPDU.Substring(lenSCA + lenOA + 20, 2);
+                int lenUD = Convert.ToInt32(userDataLength, 16) * 2;
             }
             catch (Exception ex)
             {
@@ -741,7 +732,7 @@ namespace GSMMODEM
                 {
                     try
                     {
-                        userDataLenghth = (Convert.ToInt16(strPDU.Substring(lenSCA + lenOA + 20, 2), 16) - 6).ToString("X2");
+                        userDataLength = (Convert.ToInt16(strPDU.Substring(lenSCA + lenOA + 20, 2), 16) - 6).ToString("X2");
                         userData = strPDU.Substring(lenSCA + lenOA + 22 + 6 * 2);
                     }
                     catch (Exception ex)
